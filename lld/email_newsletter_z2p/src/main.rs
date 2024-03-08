@@ -1,5 +1,5 @@
+use email_newsletter_z2p::startup::run;
 use std::net::TcpListener;
-use email_newsletter_z2p::run;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {

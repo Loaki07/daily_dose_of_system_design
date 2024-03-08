@@ -1,4 +1,4 @@
-use email_newsletter_z2p::run;
+use email_newsletter_z2p::startup::run;
 use std::net::TcpListener;
 
 fn spawn_app() -> String {
@@ -92,7 +92,7 @@ async fn subscribe_return_a_400_when_data_is_missing() {
 
         // Assert
         assert_eq!(
-            400, 
+            400,
             response.status().as_u16(),
             // Additional customised error message on test failure
             "The API did not fail with 400 Bad Request when the payload was {}.",
