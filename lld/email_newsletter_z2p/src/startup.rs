@@ -7,8 +7,11 @@ use std::net::TcpListener;
 
 pub fn run(
     listener: TcpListener,
+    db_pool: PgPool,
 ) -> Result<Server, std::io::Error> {
-    let server = HttpServer::new(|| {
+    let db_pool = Data::new(db_pool);
+
+    let server = HttpServer::new(move || {
         App::new()
             .route(
                 "/health_check",
@@ -18,6 +21,7 @@ pub fn run(
                 "/subscriptions",
                 web::post().to(subscribe),
             )
+            .app_data(db_pool.clone())
     })
     .listen(listener)?
     .run();
