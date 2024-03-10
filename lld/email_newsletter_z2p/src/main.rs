@@ -3,8 +3,7 @@ use email_newsletter_z2p::startup::run;
 use email_newsletter_z2p::telemetry::{
     get_subscriber, init_subscriber,
 };
-use secrecy::ExposeSecret;
-use sqlx::PgPool;
+use sqlx::postgres::PgPoolOptions;
 use std::net::TcpListener;
 
 #[tokio::main]
@@ -18,18 +17,15 @@ async fn main() -> std::io::Result<()> {
 
     let configuration = get_configuration()
         .expect("Failed to read configuration.");
-    let connection_pool = PgPool::connect(
-        &configuration
-            .database
-            .connection_string()
-            // .expose_secret(),
-    )
-    .await
-    .expect("Failed to connect to Postgres.");
+    let connection_pool = PgPoolOptions::new()
+        .connect_lazy_with(
+            configuration.database.with_db(),
+        );
 
     let address = format!(
-        "127.0.0.1:{}",
-        configuration.application_port
+        "{}:{}",
+        configuration.application.host,
+        configuration.application.port,
     );
     let listener = TcpListener::bind(address)?;
     run(listener, connection_pool)?.await?;
