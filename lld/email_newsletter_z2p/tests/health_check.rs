@@ -1,6 +1,7 @@
 use email_newsletter_z2p::configuration::{
     get_configuration, DatabaseSettings,
 };
+use email_newsletter_z2p::email_client::EmailClient;
 use email_newsletter_z2p::startup::run;
 use email_newsletter_z2p::telemetry::{
     get_subscriber, init_subscriber,
@@ -56,8 +57,21 @@ async fn spawn_app() -> TestApp {
     let connection_pool =
         configure_database(&configuration.database).await;
 
-    let server = run(listener, connection_pool.clone())
-        .expect("Failed to bind address");
+    let sender_email = configuration
+        .email_client
+        .sender()
+        .expect("Failed to bild address");
+    let email_client = EmailClient::new(
+        configuration.email_client.base_url,
+        sender_email,
+    );
+
+    let server = run(
+        listener,
+        connection_pool.clone(),
+        email_client,
+    )
+    .expect("Failed to bind address");
 
     let _ = tokio::spawn(server);
 
